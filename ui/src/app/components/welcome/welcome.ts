@@ -16,4 +16,3 @@ export class WelcomeComponent {
     // Form actions already navigate away via store/router
   }
 }
-

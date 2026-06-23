@@ -27,8 +27,12 @@ if (fs.existsSync(sourceFile)) {
 // Check if openapi.json exists
 const openapiPath = path.join(uiRoot, 'openapi.json');
 if (!fs.existsSync(openapiPath)) {
-  console.warn(`⚠ Warning: openapi.json not found. This is expected if the Rust backend hasn't been built yet.`);
-  console.warn(`⚠ Run 'cargo build' in the root directory to generate the OpenAPI spec, then run 'npm install' again in the ui directory.`);
+  console.warn(
+    `⚠ Warning: openapi.json not found. This is expected if the Rust backend hasn't been built yet.`,
+  );
+  console.warn(
+    `⚠ Run 'cargo build' in the root directory to generate the OpenAPI spec, then run 'npm install' again in the ui directory.`,
+  );
   process.exit(0);
 }
 
@@ -41,7 +45,7 @@ const dockerCmd = `docker run --rm -v "${cwd}:/local" openapitools/openapi-gener
 
 const result = spawnSync(dockerCmd, {
   shell: true,
-  stdio: 'inherit'
+  stdio: 'inherit',
 });
 
 process.exit(result.status);
