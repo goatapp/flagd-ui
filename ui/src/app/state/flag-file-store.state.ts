@@ -4,7 +4,6 @@ import { Action, createSelector, NgxsOnInit, Selector, State, StateContext } fro
 import { firstValueFrom } from 'rxjs';
 import { DEFAULT_BACKEND_ROOT } from '../../environments';
 import { FlagsService } from '../api-client/api/flags.service';
-import { UpdateFlagRequest } from '../api-client/model/updateFlagRequest';
 import { FlagFileContent } from '../models/flag.models';
 import { FileSystemAccess } from '../services/file-system-access';
 import {
@@ -371,7 +370,7 @@ export class FlagFileStore implements NgxsOnInit {
           continue;
         }
 
-        const updatePayload: UpdateFlagRequest = {
+        const updatePayload: FlagFileContent = {
           $evaluators: parsed.$evaluators ?? {},
           flags: parsed.flags,
           metadata: parsed.metadata ?? {},
