@@ -3,3 +3,4 @@ dist
 .angular
 test-results
 src/app/api-client
+src/app/models/generated
