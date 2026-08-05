@@ -339,7 +339,14 @@ export class FlagFileStore implements NgxsOnInit {
         return;
       }
 
-      await this.syncRemoteBackend(ctx, backend);
+      // Only sync files the user has explicitly edited (isDirty), then
+      // import the server's current state. Previously this synced ALL
+      // cached files (including stale localStorage state) before importing,
+      // which overwrote external edits on page load.
+      const hasDirtyFiles = backend.files.some((f) => f.isDirty);
+      if (hasDirtyFiles) {
+        await this.syncRemoteBackend(ctx, backend);
+      }
       await this.importRemoteBackend(ctx, backend);
       return;
     }
@@ -360,11 +367,15 @@ export class FlagFileStore implements NgxsOnInit {
     const api = new FlagsService(this.httpClient, backend.uri);
 
     try {
+      const dirtyFiles = backend.files.filter((f) => f.isDirty);
+      if (dirtyFiles.length === 0) {
+        return;
+      }
+
       const listResponse = await firstValueFrom(api.listFlags());
       const remoteFileNames = new Set(listResponse?.files ?? []);
-      const localFileNames = new Set(backend.files.map((file) => file.name));
 
-      for (const file of backend.files) {
+      for (const file of dirtyFiles) {
         const parsed = this.parseFlagFileContent(file.content);
         if (!parsed) {
           continue;
@@ -380,12 +391,6 @@ export class FlagFileStore implements NgxsOnInit {
           await firstValueFrom(api.updateFlag(file.name, updatePayload));
         } else {
           await firstValueFrom(api.createFlag(file.name, updatePayload));
-        }
-      }
-
-      for (const remoteFileName of remoteFileNames) {
-        if (!localFileNames.has(remoteFileName)) {
-          await firstValueFrom(api.deleteFlag(remoteFileName));
         }
       }
 

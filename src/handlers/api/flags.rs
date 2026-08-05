@@ -46,6 +46,7 @@ impl jsonschema::Retrieve for LocalSchemaRetriever {
 /// Application state containing configuration
 #[derive(Clone)]
 pub struct AppState {
+    #[allow(dead_code)]
     pub config: Arc<ServerConfig>,
     pub schema: Arc<jsonschema::Validator>,
     pub storage: Arc<dyn StorageBackend>,
