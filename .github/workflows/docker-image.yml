@@ -23,24 +23,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
-      - name: Extract OpenAPI schema
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: ./Dockerfile
-          target: artifacts
-          outputs: type=local,dest=./artifacts
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Upload OpenAPI schema
-        uses: actions/upload-artifact@v7
-        with:
-          name: openapi-schema
-          path: artifacts/openapi.json
-          if-no-files-found: error
-          retention-days: 1
-
       - name: Build image
         uses: docker/build-push-action@v7
         with:
@@ -101,74 +83,6 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
-
-      - name: Upload docs screenshots
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v7
-        with:
-          name: docs-screenshots
-          path: docs/assets/images/
-          retention-days: 1
-
-  docs-deploy:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: playwright-test
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v6
-
-      - name: Setup uv
-        uses: astral-sh/setup-uv@v5
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: ui/package-lock.json
-
-      - name: Install UI dependencies
-        run: npm ci
-        working-directory: ui
-
-      - name: Download OpenAPI schema
-        uses: actions/download-artifact@v8
-        with:
-          name: openapi-schema
-          path: ui/
-
-      - name: Download docs screenshots
-        uses: actions/download-artifact@v8
-        with:
-          name: docs-screenshots
-          path: docs/assets/images/
-
-      - name: Build docs
-        run: uvx zensical build --clean
-
-      - name: Build UI demo for docs
-        run: npm run build-demo
-        working-directory: ui
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v5
-        with:
-          path: site
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v5
 
   docker-publish:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
