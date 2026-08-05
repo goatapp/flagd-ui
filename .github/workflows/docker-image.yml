@@ -18,13 +18,13 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Extract OpenAPI schema
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./Dockerfile
@@ -34,7 +34,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Upload OpenAPI schema
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: openapi-schema
           path: artifacts/openapi.json
@@ -42,7 +42,7 @@ jobs:
           retention-days: 1
 
       - name: Build image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./Dockerfile
@@ -53,7 +53,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Upload image artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: flagd-ui-ci-image
           path: /tmp/flagd-ui-ci.tar
@@ -68,10 +68,10 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Download Docker image artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: flagd-ui-ci-image
           path: /tmp
@@ -79,7 +79,7 @@ jobs:
       - name: Load Docker image
         run: docker load --input /tmp/flagd-ui-ci.tar
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: lts/*
 
@@ -95,7 +95,7 @@ jobs:
         env:
           FLAGD_UI_IMAGE: flagd-ui:ci
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
@@ -104,7 +104,7 @@ jobs:
 
       - name: Upload docs screenshots
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: docs-screenshots
           path: docs/assets/images/
@@ -123,16 +123,16 @@ jobs:
       id-token: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Setup uv
         uses: astral-sh/setup-uv@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -143,13 +143,13 @@ jobs:
         working-directory: ui
 
       - name: Download OpenAPI schema
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: openapi-schema
           path: ui/
 
       - name: Download docs screenshots
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: docs-screenshots
           path: docs/assets/images/
@@ -162,13 +162,13 @@ jobs:
         working-directory: ui
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: site
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
 
   docker-publish:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
@@ -179,7 +179,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -203,10 +203,10 @@ jobs:
           echo "minor=$MINOR" >> "$GITHUB_OUTPUT"
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Login to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -218,7 +218,7 @@ jobs:
 
       - name: Generate Docker metadata
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ${{ steps.image.outputs.name }}
           tags: |
@@ -229,7 +229,7 @@ jobs:
             type=raw,value=${{ steps.version.outputs.major }}
 
       - name: Build and push image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./Dockerfile

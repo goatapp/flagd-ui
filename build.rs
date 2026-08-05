@@ -21,9 +21,6 @@ mod storage {
         async fn flag_exists(&self, name: &str) -> AppResult<bool>;
     }
 
-    pub struct LocalStorage;
-    pub struct AzureStorage;
-
     pub fn create_storage_backend(_uri: &str) -> AppResult<Arc<dyn StorageBackend>> {
         panic!("Storage backend should not be used in build script")
     }
